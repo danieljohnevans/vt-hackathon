@@ -8,13 +8,23 @@ import json
 import re
 import os
 from dotenv import load_dotenv
-
+import argparse
 # THIS IS PARTICULAR TO THE INTERNET ARCHIVE FORMAT
+
+#CLI stuff
+parser = argparse.ArgumentParser()
+parser.add_argument("-mu", "--manifest_url", help="The manifest of an issue e.g. https://iiif.archive.org/iiif/3/sim_manifesto_1878-05_8_5/manifest.json")
+parser.add_argument("-su", "--search_url", help="The url of a Viral Texts elastic search query e.g. https://es.viral-texts.software.ncsa.illinois.edu/viral-texts-test/_search?size=100&q=issue:sim_manifesto_1878-05_8_5%20AND%20day:1878-05-01")
+
+args = parser.parse_args()
+
+issue_url = args.search_url
+manifest_url = args.manifest_url
 
 
 load_dotenv()
 # get the viral texts data for a single issue
-issue_url = "https://es.viral-texts.software.ncsa.illinois.edu/viral-texts-test/_search?size=100&q=issue:sim_manifesto_1878-05_8_5%20AND%20day:1878-05-01"
+#issue_url = "https://es.viral-texts.software.ncsa.illinois.edu/viral-texts-test/_search?size=100&q=issue:sim_manifesto_1878-05_8_5%20AND%20day:1878-05-01"
 
 password = os.environ.get("password")
 username = os.environ.get("username")
@@ -22,7 +32,7 @@ username = os.environ.get("username")
 issue_json = requests.get(issue_url, auth=(username, password)).json()
 
 # archive.org manifest for the issue in question
-manifest_url = "https://iiif.archive.org/iiif/3/sim_manifesto_1878-05_8_5/manifest.json"
+#manifest_url = "https://iiif.archive.org/iiif/3/sim_manifesto_1878-05_8_5/manifest.json"
 
 response = requests.get(manifest_url)
 
@@ -99,9 +109,11 @@ CANVAS_HEIGHT = manifest_data["items"][0]["height"]
 
 config.configs["helpers.auto_fields.AutoLang"].auto_lang = "en"
 
+label_text = manifest_data["label"]["none"][0]
+
 manifest = Manifest(
-    id="https://iiif.archive.org/iiif/3/sim_manifesto_1878-05_8_5/manifest.json",
-    label={"en": ["Shaker blah blah"]},
+    id=manifest_url,
+    label={"en": [label_text]},
     behavior=["paged"],
 )
 
