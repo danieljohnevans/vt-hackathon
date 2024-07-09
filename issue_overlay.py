@@ -42,23 +42,25 @@ def pct_string_to_xywh(url):
     pct_h = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url).group(1)
 
     print(float(pct_x))
-    p_x = float(pct_x)*.01*CANVAS_WIDTH
-    p_y = float(pct_y)*.01*CANVAS_HEIGHT
-    p_w = float(pct_w)*.01*CANVAS_WIDTH
-    p_h = float(pct_h)*.01*CANVAS_HEIGHT
+    p_x = round(float(pct_x)*.01*CANVAS_WIDTH)
+    p_y = round(float(pct_y)*.01*CANVAS_HEIGHT)
+    p_w = round(float(pct_w)*.01*CANVAS_WIDTH)
+    p_h = round(float(pct_h)*.01*CANVAS_HEIGHT)
 
-    return(p_x, p_y, p_w, p_h)
+
+    return("xywh=" + str(p_x) + "," + str(p_y) + "," + str(p_w) + "," + str(p_h))
 
 
 #add annotation to canvas
-def add_ann_to_page(page, id):
+def add_ann_to_page(page, id, url):
+    xywh_string = pct_string_to_xywh(url)
     page.make_annotation(id=page,
                                   motivation="tagging",
                                   body={"type": "TextualBody",
                                         "language": "en",
                                         "format": "text/plain",
                                         "value": "Here is another annotation"},
-                                  target=page.id + "#xywh=265,661,1260,1239",
+                                  target=page.id + xywh_string,
                                   anno_page_id=page)
 
 
@@ -78,7 +80,7 @@ if response.status_code == 200:
 CANVAS_WIDTH = manifest_data["items"][0]["width"]
 CANVAS_HEIGHT = manifest_data["items"][0]["height"]
 
-pct_string_to_xywh("https://iiif.archive.org/iiif/sim_manifesto_1878-01_8_1$12/pct:51.381215,37.062726,37.338858,26.568154/full/0/default.jpg")
+print(pct_string_to_xywh("https://iiif.archive.org/iiif/sim_manifesto_1878-01_8_1$12/pct:51.381215,37.062726,37.338858,26.568154/full/0/default.jpg"))
 
 
 config.configs['helpers.auto_fields.AutoLang'].auto_lang = "en"
