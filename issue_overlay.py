@@ -1,3 +1,5 @@
+from unittest import result
+
 from iiif_prezi3 import Manifest, config
 from PIL import Image, ImageDraw
 import requests
@@ -42,20 +44,17 @@ def add_to_canvas(page, canvas_page):
 
 
 def pct_string_to_xywh(url):
-    pct_x = re.search(
-        r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url
-    ).group(1)
-    pct_y = re.search(
-        r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url
-    ).group(2)
-    pct_w = re.search(
-        r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url
-    ).group(3)
-    pct_h = re.search(
-        r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url
-    ).group(4)
+    regex_pattern = "https://iiif.archive.org/iiif/.*/pct:(.*),(.*),(.*),(.*)/full"
+    results = re.search(regex_pattern, url)
+    pct_x, pct_y, pct_w, pct_h = (
+        results.group(1),
+        results.group(2),
+        results.group(3),
+        results.group(4),
+    )
 
-    print(float(pct_x))
+    print(url, float(pct_x), float(pct_y), float(pct_w), float(pct_h))
+
     p_x = round(float(pct_x) * 0.01 * CANVAS_WIDTH)
     p_y = round(float(pct_y) * 0.01 * CANVAS_HEIGHT)
     p_w = round(float(pct_w) * 0.01 * CANVAS_WIDTH)
@@ -76,8 +75,8 @@ def add_ann_to_page(page, cluster_id, url):
             "format": "text/plain",
             "value": cluster_id,
         },
-        target = page.id + "#" + xywh_string,
-        anno_page_id = url
+        target=page.id + "#" + xywh_string,
+        anno_page_id=url,
     )
 
 
@@ -150,12 +149,12 @@ for page in data_dict:
 
         pattern = r"\$(\d{1,3})"
         regex_page = re.search(pattern, url).group(1)
-        #print(page, annotation, coords, regex_page)
+        # print(page, annotation, coords, regex_page)
 # TODO: add annotations to canvases
 # print(page_dict)
 
 
-#for page in page_dict.keys():
+# for page in page_dict.keys():
 #    page_dict[page].make_annotation(
 #        id="https://iiif.io/api/cookbook/recipe/0021-tagging/annotation/p0003-tag",
 #        motivation="tagging",
@@ -174,7 +173,7 @@ for page in data_dict:
         add_ann_to_page(page_dict[page], annotation["_id"], annotation["image_data"])
 
 
-#ann1 = add_ann_to_page(page_dict[0], "asdfasdfhljk", "https://iiif.archive.org/iiif/sim_manifesto_1878-05_8_5$20/pct:7.642726,13.902292,73.572744,76.145959/full/0/default.jpg")
+# ann1 = add_ann_to_page(page_dict[0], "asdfasdfhljk", "https://iiif.archive.org/iiif/sim_manifesto_1878-05_8_5$20/pct:7.642726,13.902292,73.572744,76.145959/full/0/default.jpg")
 
 
 with open("output.json", "w") as outfile:
