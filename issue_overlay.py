@@ -65,10 +65,10 @@ def pct_string_to_xywh(url):
 
 
 # add annotation to canvas
-def add_ann_to_page(page, id, url):
+def add_ann_to_page(page, cluster_id, url):
     xywh_string = pct_string_to_xywh(url)
     page.make_annotation(
-        id=page,
+        id=url,
         motivation="tagging",
         body={
             "type": "TextualBody",
@@ -76,8 +76,8 @@ def add_ann_to_page(page, id, url):
             "format": "text/plain",
             "value": "Here is another annotation",
         },
-        target=page.id + xywh_string,
-        anno_page_id=page,
+        target = page.id + "#" + xywh_string,
+        anno_page_id = url
     )
 
 
@@ -168,6 +168,8 @@ for page in page_dict.keys():
         target=page_dict[page].id + "#xywh=265,661,1260,1239",
         anno_page_id="https://www.loc.gov/resource/sn96061150/1889-10-20/ed-1/seq-2/",
     )
+
+ann1 = add_ann_to_page(page_dict[0], "asdfasdfhljk", "https://iiif.archive.org/iiif/sim_manifesto_1878-05_8_5$20/pct:7.642726,13.902292,73.572744,76.145959/full/0/default.jpg")
 
 
 with open("output.json", "w") as outfile:
