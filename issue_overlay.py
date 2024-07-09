@@ -4,13 +4,18 @@ import requests
 import pprint
 import json
 import re
-
+import os
+from dotenv import load_dotenv
 #THIS IS PARTICULAR TO THE INTERNET ARCHIVE FORMAT
 
+
+load_dotenv()
 #get the viral texts data for a single issue
 issue_url = 'https://es.viral-texts.software.ncsa.illinois.edu/viral-texts-test/_search?size=100&q=issue:sim_manifesto_1878-05_8_5%20AND%20day:1878-05-01'
-username = 'elastic'
-password = '1%Zlbf7936cDGgK4'
+
+password = os.environ.get("password")
+username = os.environ.get("username")
+
 issue_json = requests.get(issue_url, auth=(username, password)).json()
 
 #archive.org manifest for the issue in question
@@ -21,14 +26,21 @@ response = requests.get(manifest_url)
 data_dict = {}
 
 #add page to canvas
-def add_to_canvas(canvas_page):
-	manifest.make_canvas_from_iiif(url=canvas_page,
+def add_to_canvas(page, canvas_page):
+	page_dict[page] = manifest.make_canvas_from_iiif(url=canvas_page,
                                          id=canvas_page,
                                          label="Shaker",
                                          anno_id=canvas_page,
                                          anno_page_id=canvas_page)
+def pct_string_to_xywh(url):
+    pct_x = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
+    pct_y = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
+    pct_w = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
+    pct_h = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
+
+
 #add annotation to canvas
-def add_ann_to_page(page):
+def add_ann_to_page(page, id):
     page.make_annotation(id=page,
                                   motivation="tagging",
                                   body={"type": "TextualBody",
@@ -79,10 +91,21 @@ for cluster_annotation in issue_json["hits"]["hits"]:
 page_dict = {}
 
 for page in data_dict:
-    page_dict[page] = add_to_canvas(data_dict[page]["canvas_page"])
+    add_to_canvas(page, data_dict[page]["canvas_page"])
 
+for page in data_dict:
+    for annotation in data_dict[page]["annotations"]:
+        print(annotation)
 #TODO: add annotations to canvases
+#print(page_dict)
 
-
+anno1 = page_dict[0].make_annotation(id="https://iiif.io/api/cookbook/recipe/0021-tagging/annotation/p0003-tag",
+                              motivation="tagging",
+                              body={"type": "TextualBody",
+                                    "language": "en",
+                                    "format": "text/plain",
+                                    "value": "Here is another annotation"},
+                              target=page_dict[0].id + "#xywh=265,661,1260,1239",
+                              anno_page_id="https://www.loc.gov/resource/sn96061150/1889-10-20/ed-1/seq-2/")
 
 print(manifest.json(indent=2))
