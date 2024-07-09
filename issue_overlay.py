@@ -25,6 +25,9 @@ response = requests.get(manifest_url)
 
 data_dict = {}
 
+CANVAS_WIDTH = 0
+CANVAS_HEIGHT = 0
+
 #add page to canvas
 def add_to_canvas(page, canvas_page):
 	page_dict[page] = manifest.make_canvas_from_iiif(url=canvas_page,
@@ -33,10 +36,18 @@ def add_to_canvas(page, canvas_page):
                                          anno_id=canvas_page,
                                          anno_page_id=canvas_page)
 def pct_string_to_xywh(url):
-    pct_x = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
-    pct_y = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
-    pct_w = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
-    pct_h = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct(.*),(.*),(.*),(.*)\/full", archive_url).group(1)
+    pct_x = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url).group(1)
+    pct_y = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url).group(1)
+    pct_w = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url).group(1)
+    pct_h = re.search(r"https:\/\/iiif\.archive\.org\/iiif\/.*\/pct:(.*),(.*),(.*),(.*)\/full", url).group(1)
+
+    print(float(pct_x))
+    p_x = float(pct_x)*.01*CANVAS_WIDTH
+    p_y = float(pct_y)*.01*CANVAS_HEIGHT
+    p_w = float(pct_w)*.01*CANVAS_WIDTH
+    p_h = float(pct_h)*.01*CANVAS_HEIGHT
+
+    return(p_x, p_y, p_w, p_h)
 
 
 #add annotation to canvas
@@ -64,7 +75,12 @@ if response.status_code == 200:
         width = max(width)
         height = max(height)
 
-            
+CANVAS_WIDTH = manifest_data["items"][0]["width"]
+CANVAS_HEIGHT = manifest_data["items"][0]["height"]
+
+pct_string_to_xywh("https://iiif.archive.org/iiif/sim_manifesto_1878-01_8_1$12/pct:51.381215,37.062726,37.338858,26.568154/full/0/default.jpg")
+
+
 config.configs['helpers.auto_fields.AutoLang'].auto_lang = "en"
 
 manifest = Manifest(id="https://iiif.archive.org/iiif/3/sim_manifesto_1878-05_8_5/manifest.json",
@@ -85,6 +101,8 @@ for cluster_annotation in issue_json["hits"]["hits"]:
 		archive_url = cluster_annotation["_source"]["url"]
 		page_num = re.search(r"https:\/\/archive\.org\/details\/.*\/page\/n([0-9]*)\/mode", archive_url).group(1)
 		data_dict[int(page_num)]["annotations"].append({"_id": cluster_annotation["_id"], "cluster": cluster_annotation["_source"]["cluster"], "image_data": cluster_annotation["_source"]["page_image"]})
+
+
 
 
 #dict containing the page manifests
