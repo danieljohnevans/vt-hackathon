@@ -53,8 +53,6 @@ def pct_string_to_xywh(url):
         results.group(4),
     )
 
-    print(url, float(pct_x), float(pct_y), float(pct_w), float(pct_h))
-
     p_x = round(float(pct_x) * 0.01 * CANVAS_WIDTH)
     p_y = round(float(pct_y) * 0.01 * CANVAS_HEIGHT)
     p_w = round(float(pct_w) * 0.01 * CANVAS_WIDTH)
@@ -66,20 +64,21 @@ def pct_string_to_xywh(url):
 # add annotation to canvas
 def add_ann_to_page(page, cluster_id, url):
     xywh_string = pct_string_to_xywh(url)
+    value_string = "<p><a href='https://orca-app-ibxg3.ondigitalocean.app/cluster/" + str(cluster_id) + "'>See cluster: " + str(cluster_id) + "</a></p>"
     page.make_annotation(
         id=url,
-        motivation="tagging",
+        motivation="commenting",
         body={
             "type": "TextualBody",
             "language": "en",
-            "format": "text/plain",
-            "value": cluster_id,
+            "format": "text/html",
+            "value": value_string,
         },
         target=page.id + "#" + xywh_string,
         anno_page_id=url,
     )
 
-
+#get the manifest data
 if response.status_code == 200:
     manifest_data = response.json()
     children = manifest_data.get("sequences", [])
@@ -96,11 +95,6 @@ if response.status_code == 200:
 CANVAS_WIDTH = manifest_data["items"][0]["width"]
 CANVAS_HEIGHT = manifest_data["items"][0]["height"]
 
-print(
-    pct_string_to_xywh(
-        "https://iiif.archive.org/iiif/sim_manifesto_1878-01_8_1$12/pct:51.381215,37.062726,37.338858,26.568154/full/0/default.jpg"
-    )
-)
 
 
 config.configs["helpers.auto_fields.AutoLang"].auto_lang = "en"
@@ -149,9 +143,7 @@ for page in data_dict:
 
         pattern = r"\$(\d{1,3})"
         regex_page = re.search(pattern, url).group(1)
-        # print(page, annotation, coords, regex_page)
 # TODO: add annotations to canvases
-# print(page_dict)
 
 
 # for page in page_dict.keys():
@@ -170,7 +162,7 @@ for page in data_dict:
 
 for page in data_dict:
     for annotation in data_dict[page]["annotations"]:
-        add_ann_to_page(page_dict[page], annotation["_id"], annotation["image_data"])
+        add_ann_to_page(page_dict[page], annotation["cluster"], annotation["image_data"])
 
 
 # ann1 = add_ann_to_page(page_dict[0], "asdfasdfhljk", "https://iiif.archive.org/iiif/sim_manifesto_1878-05_8_5$20/pct:7.642726,13.902292,73.572744,76.145959/full/0/default.jpg")
